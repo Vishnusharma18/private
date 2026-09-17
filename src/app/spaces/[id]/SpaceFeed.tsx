@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Heart, MessageCircle, Image as ImageIcon, Send, Trash2, Edit3, Plus, FileText } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Heart, MessageCircle, Image as ImageIcon, Send, Trash2, Plus, FileText } from "lucide-react";
 
 export default function SpaceFeed({
   spaceId,
@@ -78,7 +79,6 @@ export default function SpaceFeed({
       });
 
       if (res.ok) {
-        // Refresh posts list
         const refresh = await fetch(`/api/spaces/${spaceId}/posts`);
         if (refresh.ok) {
           const data = await refresh.json();
@@ -130,8 +130,13 @@ export default function SpaceFeed({
 
   return (
     <div className="space-y-8">
-      {/* Post Creation Box */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      {/* Post Creation Box with Framer Motion */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+      >
         <div className="flex border-b border-gray-100 pb-3 mb-4 gap-4">
           <button
             onClick={() => setPostType("MEMORY")}
@@ -159,7 +164,9 @@ export default function SpaceFeed({
 
         <form onSubmit={handleCreatePost} className="space-y-4">
           {postType === "STORY" && (
-            <input
+            <motion.input
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
               type="text"
               required
               value={title}
@@ -183,7 +190,7 @@ export default function SpaceFeed({
           />
 
           <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-gray-100">
-            <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-gray-600 hover:text-amber-700 bg-gray-50 px-3 py-2 rounded-md border border-gray-200">
+            <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-gray-600 hover:text-amber-700 bg-gray-50 px-3 py-2 rounded-md border border-gray-200 transition">
               <ImageIcon className="w-4 h-4 text-amber-600" />
               <span>{selectedFile ? selectedFile.name : "Attach Photo/Video"}</span>
               <input
@@ -194,147 +201,170 @@ export default function SpaceFeed({
               />
             </label>
 
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               type="submit"
               disabled={uploading}
-              className="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-medium text-sm rounded-md shadow disabled:opacity-50"
+              className="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-medium text-sm rounded-md shadow disabled:opacity-50 transition"
             >
               {uploading ? "Publishing..." : "Publish"}
-            </button>
+            </motion.button>
           </div>
         </form>
-      </div>
+      </motion.div>
 
-      {/* Posts Feed */}
+      {/* Posts Feed with Staggered Entrance Animations */}
       <div className="space-y-6">
-        {posts.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-xl border border-gray-200 text-gray-500">
-            No memories or stories shared yet. Be the first to share one!
-          </div>
-        ) : (
-          posts.map((post) => {
-            const isUserReacted = post.reactions?.some((r: any) => r.userId === currentUserId);
+        <AnimatePresence>
+          {posts.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center py-12 bg-white rounded-xl border border-gray-200 text-gray-500"
+            >
+              No memories or stories shared yet. Be the first to share one!
+            </motion.div>
+          ) : (
+            posts.map((post, index) => {
+              const isUserReacted = post.reactions?.some((r: any) => r.userId === currentUserId);
 
-            return (
-              <div key={post.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center font-bold text-amber-800">
-                      {post.author?.displayName?.[0]?.toUpperCase() || "U"}
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-gray-900">{post.author?.displayName}</h4>
-                      <p className="text-xs text-gray-500">
-                        {new Date(post.createdAt).toLocaleDateString(undefined, {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    {post.type === "STORY" && (
-                      <span className="text-xs font-semibold px-2 py-0.5 rounded bg-amber-100 text-amber-800">
-                        Story
-                      </span>
-                    )}
-
-                    {(post.authorId === currentUserId) && (
-                      <button
-                        onClick={() => handleDeletePost(post.id)}
-                        className="text-gray-400 hover:text-red-600 p-1 rounded"
-                        title="Delete post"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {post.title && (
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">{post.title}</h3>
-                )}
-
-                <p className="text-gray-800 text-sm whitespace-pre-wrap leading-relaxed mb-4">
-                  {post.content}
-                </p>
-
-                {/* Media Attachments */}
-                {post.postMedia?.length > 0 && (
-                  <div className="mb-4 rounded-lg overflow-hidden border border-gray-200 max-h-96 bg-black flex items-center justify-center">
-                    {post.postMedia[0].media.type === "VIDEO" ? (
-                      <video
-                        controls
-                        src={post.postMedia[0].media.url}
-                        className="max-h-96 w-full object-contain"
-                      />
-                    ) : (
-                      <img
-                        src={post.postMedia[0].media.url}
-                        alt="Memory media"
-                        className="max-h-96 w-full object-contain"
-                      />
-                    )}
-                  </div>
-                )}
-
-                {/* Social Actions */}
-                <div className="flex items-center gap-6 py-3 border-t border-b border-gray-100 text-xs font-medium text-gray-600">
-                  <button
-                    onClick={() => handleToggleReaction(post.id)}
-                    className={`flex items-center gap-1.5 transition ${
-                      isUserReacted ? "text-red-600 font-bold" : "hover:text-red-600"
-                    }`}
-                  >
-                    <Heart className={`w-4 h-4 ${isUserReacted ? "fill-red-600 text-red-600" : ""}`} />
-                    <span>{post.reactions?.length || 0} Likes</span>
-                  </button>
-
-                  <div className="flex items-center gap-1.5">
-                    <MessageCircle className="w-4 h-4" />
-                    <span>{post.comments?.length || 0} Comments</span>
-                  </div>
-                </div>
-
-                {/* Comments List */}
-                <div className="mt-4 space-y-3">
-                  {post.comments?.map((comment: any) => (
-                    <div key={comment.id} className="bg-gray-50 p-3 rounded-lg text-xs">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="font-bold text-gray-900">{comment.author?.displayName}</span>
-                        <span className="text-gray-400">
-                          {new Date(comment.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                        </span>
+              return (
+                <motion.div
+                  key={post.id}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
+                  className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center font-bold text-amber-800">
+                        {post.author?.displayName?.[0]?.toUpperCase() || "U"}
                       </div>
-                      <p className="text-gray-700">{comment.body}</p>
+                      <div>
+                        <h4 className="text-sm font-bold text-gray-900">{post.author?.displayName}</h4>
+                        <p className="text-xs text-gray-500">
+                          {new Date(post.createdAt).toLocaleDateString(undefined, {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </p>
+                      </div>
                     </div>
-                  ))}
 
-                  {/* Add Comment Input */}
-                  <form onSubmit={(e) => handleAddComment(post.id, e)} className="flex gap-2 pt-2">
-                    <input
-                      type="text"
-                      placeholder="Write a comment..."
-                      value={commentInputs[post.id] || ""}
-                      onChange={(e) => setCommentInputs({ ...commentInputs, [post.id]: e.target.value })}
-                      className="flex-1 px-3 py-1.5 border border-gray-300 rounded-md text-xs focus:ring-amber-500 focus:border-amber-500"
-                    />
-                    <button
-                      type="submit"
-                      className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-md text-xs font-medium flex items-center gap-1"
+                    <div className="flex items-center gap-2">
+                      {post.type === "STORY" && (
+                        <span className="text-xs font-semibold px-2 py-0.5 rounded bg-amber-100 text-amber-800">
+                          Story
+                        </span>
+                      )}
+
+                      {post.authorId === currentUserId && (
+                        <button
+                          onClick={() => handleDeletePost(post.id)}
+                          className="text-gray-400 hover:text-red-600 p-1 rounded transition"
+                          title="Delete post"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {post.title && (
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">{post.title}</h3>
+                  )}
+
+                  <p className="text-gray-800 text-sm whitespace-pre-wrap leading-relaxed mb-4">
+                    {post.content}
+                  </p>
+
+                  {/* Media Attachments */}
+                  {post.postMedia?.length > 0 && (
+                    <div className="mb-4 rounded-lg overflow-hidden border border-gray-200 max-h-96 bg-black flex items-center justify-center">
+                      {post.postMedia[0].media.type === "VIDEO" ? (
+                        <video
+                          controls
+                          src={post.postMedia[0].media.url}
+                          className="max-h-96 w-full object-contain"
+                        />
+                      ) : (
+                        <img
+                          src={post.postMedia[0].media.url}
+                          alt="Memory media"
+                          className="max-h-96 w-full object-contain"
+                        />
+                      )}
+                    </div>
+                  )}
+
+                  {/* Social Actions */}
+                  <div className="flex items-center gap-6 py-3 border-t border-b border-gray-100 text-xs font-medium text-gray-600">
+                    <motion.button
+                      whileTap={{ scale: 1.2 }}
+                      onClick={() => handleToggleReaction(post.id)}
+                      className={`flex items-center gap-1.5 transition ${
+                        isUserReacted ? "text-red-600 font-bold" : "hover:text-red-600"
+                      }`}
                     >
-                      <Send className="w-3 h-3" />
-                    </button>
-                  </form>
-                </div>
-              </div>
-            );
-          })
-        )}
+                      <Heart className={`w-4 h-4 ${isUserReacted ? "fill-red-600 text-red-600" : ""}`} />
+                      <span>{post.reactions?.length || 0} Likes</span>
+                    </motion.button>
+
+                    <div className="flex items-center gap-1.5">
+                      <MessageCircle className="w-4 h-4" />
+                      <span>{post.comments?.length || 0} Comments</span>
+                    </div>
+                  </div>
+
+                  {/* Comments List */}
+                  <div className="mt-4 space-y-3">
+                    {post.comments?.map((comment: any) => (
+                      <motion.div
+                        key={comment.id}
+                        initial={{ opacity: 0, x: -5 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="bg-gray-50 p-3 rounded-lg text-xs"
+                      >
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="font-bold text-gray-900">{comment.author?.displayName}</span>
+                          <span className="text-gray-400">
+                            {new Date(comment.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                          </span>
+                        </div>
+                        <p className="text-gray-700">{comment.body}</p>
+                      </motion.div>
+                    ))}
+
+                    {/* Add Comment Input */}
+                    <form onSubmit={(e) => handleAddComment(post.id, e)} className="flex gap-2 pt-2">
+                      <input
+                        type="text"
+                        placeholder="Write a comment..."
+                        value={commentInputs[post.id] || ""}
+                        onChange={(e) => setCommentInputs({ ...commentInputs, [post.id]: e.target.value })}
+                        className="flex-1 px-3 py-1.5 border border-gray-300 rounded-md text-xs focus:ring-amber-500 focus:border-amber-500"
+                      />
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        type="submit"
+                        className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-md text-xs font-medium flex items-center gap-1"
+                      >
+                        <Send className="w-3 h-3" />
+                      </motion.button>
+                    </form>
+                  </div>
+                </motion.div>
+              );
+            })
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
