@@ -1,0 +1,214 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  displayName  String
+  username     String   @unique
+  avatarUrl    String?
+  bio          String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  ownedSpaces   Space[]        @relation("SpaceOwner")
+  memberships   Membership[]
+  invitations   Invitation[]   @relation("UserInvitations")
+  posts         Post[]
+  media         Media[]
+  comments      Comment[]
+  reactions     Reaction[]
+  albums        Album[]
+  events        Event[]
+  notifications Notification[] @relation("UserNotifications")
+  actionsDone   Notification[] @relation("ActorNotifications")
+  AlbumMedia    AlbumMedia[]
+}
+
+model Space {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  coverUrl    String?
+  ownerId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner       User         @relation("SpaceOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  memberships Membership[]
+  invitations Invitation[]
+  posts       Post[]
+  media       Media[]
+  albums      Album[]
+  events      Event[]
+}
+
+model Membership {
+  id        String   @id @default(uuid())
+  spaceId   String
+  userId    String
+  role      String   @default("MEMBER") // OWNER, ADMIN, MEMBER
+  status    String   @default("ACTIVE") // ACTIVE, PENDING
+  joinedAt  DateTime @default(now())
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([spaceId, userId])
+}
+
+model Invitation {
+  id         String    @id @default(uuid())
+  spaceId    String
+  inviterId  String
+  token      String    @unique
+  email      String?
+  role       String    @default("MEMBER")
+  expiresAt  DateTime
+  acceptedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  space   Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  inviter User  @relation("UserInvitations", fields: [inviterId], references: [id], onDelete: Cascade)
+}
+
+model Post {
+  id           String    @id @default(uuid())
+  spaceId      String
+  authorId     String
+  type         String    @default("MEMORY") // MEMORY, STORY
+  title        String?
+  content      String
+  coverMediaId String?
+  status       String    @default("PUBLISHED") // DRAFT, PUBLISHED
+  publishedAt  DateTime? @default(now())
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  space     Space       @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  author    User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  postMedia PostMedia[]
+  comments  Comment[]
+  reactions Reaction[]
+}
+
+model Media {
+  id           String   @id @default(uuid())
+  spaceId      String
+  uploaderId   String
+  storageKey   String
+  type         String   // IMAGE, VIDEO
+  mimeType     String
+  size         Int
+  url          String
+  width        Int?
+  height       Int?
+  duration     Int?
+  thumbnailKey String?
+  createdAt    DateTime @default(now())
+
+  space     Space        @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  uploader  User         @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+  postMedia PostMedia[]
+  albumMedia AlbumMedia[]
+}
+
+model PostMedia {
+  postId    String
+  mediaId   String
+  sortOrder Int    @default(0)
+
+  post  Post  @relation(fields: [postId], references: [id], onDelete: Cascade)
+  media Media @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@id([postId, mediaId])
+}
+
+model Album {
+  id           String   @id @default(uuid())
+  spaceId      String
+  creatorId    String
+  name         String
+  description  String?
+  coverMediaId String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  space      Space        @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  creator    User         @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  albumMedia AlbumMedia[]
+}
+
+model AlbumMedia {
+  albumId String
+  mediaId String
+  addedBy String
+  addedAt DateTime @default(now())
+
+  album Album @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  media Media @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [addedBy], references: [id], onDelete: Cascade)
+
+  @@id([albumId, mediaId])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  postId    String
+  authorId  String
+  body      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+model Reaction {
+  id        String   @id @default(uuid())
+  postId    String
+  userId    String
+  type      String   // LIKE, HEART, LAUGH, WOW, SAD
+  createdAt DateTime @default(now())
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId, type])
+}
+
+model Event {
+  id           String   @id @default(uuid())
+  spaceId      String
+  creatorId    String
+  title        String
+  description  String?
+  eventDate    DateTime
+  coverMediaId String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  space   Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  creator User  @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id         String   @id @default(uuid())
+  userId     String
+  actorId    String
+  type       String   // INVITE, COMMENT, REACTION
+  entityType String   // SPACE, POST, COMMENT
+  entityId   String
+  readAt     DateTime?
+  createdAt  DateTime @default(now())
+
+  user  User @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  actor User @relation("ActorNotifications", fields: [actorId], references: [id], onDelete: Cascade)
+}
