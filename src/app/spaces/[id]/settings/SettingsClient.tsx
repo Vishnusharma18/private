@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Save, Trash2, AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 
 export default function SettingsClient({
   space,
@@ -77,7 +77,7 @@ export default function SettingsClient({
             disabled={!canManage}
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white placeholder-gray-400 focus:ring-amber-500 focus:border-amber-500 disabled:bg-gray-100 disabled:text-gray-500"
+            className="w-full px-3.5 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white placeholder-gray-400 font-medium disabled:bg-gray-100"
           />
         </div>
 
@@ -88,7 +88,7 @@ export default function SettingsClient({
             disabled={!canManage}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white placeholder-gray-400 focus:ring-amber-500 focus:border-amber-500 disabled:bg-gray-100 disabled:text-gray-500"
+            className="w-full px-3.5 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white placeholder-gray-400 font-medium disabled:bg-gray-100"
           />
         </div>
 

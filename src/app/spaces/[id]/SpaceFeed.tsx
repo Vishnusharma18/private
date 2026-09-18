@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, MessageCircle, Image as ImageIcon, Send, Trash2, Plus, FileText } from "lucide-react";
+import { Heart, MessageCircle, Image as ImageIcon, Send, Trash2, Plus, FileText, X } from "lucide-react";
 
 export default function SpaceFeed({
   spaceId,
@@ -17,9 +17,24 @@ export default function SpaceFeed({
   const [postType, setPostType] = useState<"MEMORY" | "STORY">("MEMORY");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [commentInputs, setCommentInputs] = useState<{ [postId: string]: string }>({});
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    const files = Array.from(e.target.files);
+    setSelectedFiles((prev) => [...prev, ...files]);
+
+    const newPreviews = files.map((file) => URL.createObjectURL(file));
+    setPreviews((prev) => [...prev, ...newPreviews]);
+  };
+
+  const removeFile = (index: number) => {
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+    setPreviews((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,19 +44,21 @@ export default function SpaceFeed({
     let mediaIds: string[] = [];
 
     try {
-      if (selectedFile) {
-        const formData = new FormData();
-        formData.append("file", selectedFile);
-        formData.append("spaceId", spaceId);
+      if (selectedFiles.length > 0) {
+        for (const file of selectedFiles) {
+          const formData = new FormData();
+          formData.append("file", file);
+          formData.append("spaceId", spaceId);
 
-        const uploadRes = await fetch("/api/media/upload", {
-          method: "POST",
-          body: formData,
-        });
+          const uploadRes = await fetch("/api/media/upload", {
+            method: "POST",
+            body: formData,
+          });
 
-        if (uploadRes.ok) {
-          const uploadData = await uploadRes.json();
-          mediaIds.push(uploadData.media.id);
+          if (uploadRes.ok) {
+            const uploadData = await uploadRes.json();
+            mediaIds.push(uploadData.media.id);
+          }
         }
       }
 
@@ -61,7 +78,8 @@ export default function SpaceFeed({
         setPosts([data.post, ...posts]);
         setContent("");
         setTitle("");
-        setSelectedFile(null);
+        setSelectedFiles([]);
+        setPreviews([]);
       }
     } catch (err) {
       console.error(err);
@@ -130,7 +148,7 @@ export default function SpaceFeed({
 
   return (
     <div className="space-y-8">
-      {/* Post Creation Box with Framer Motion */}
+      {/* Post Creation Box */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -142,7 +160,7 @@ export default function SpaceFeed({
             onClick={() => setPostType("MEMORY")}
             className={`flex items-center space-x-1.5 text-sm font-medium pb-2 border-b-2 transition ${
               postType === "MEMORY"
-                ? "border-amber-600 text-amber-700"
+                ? "border-amber-600 text-amber-700 font-bold"
                 : "border-transparent text-gray-500 hover:text-gray-700"
             }`}
           >
@@ -153,7 +171,7 @@ export default function SpaceFeed({
             onClick={() => setPostType("STORY")}
             className={`flex items-center space-x-1.5 text-sm font-medium pb-2 border-b-2 transition ${
               postType === "STORY"
-                ? "border-amber-600 text-amber-700"
+                ? "border-amber-600 text-amber-700 font-bold"
                 : "border-transparent text-gray-500 hover:text-gray-700"
             }`}
           >
@@ -172,7 +190,7 @@ export default function SpaceFeed({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Story Title..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-semibold text-gray-900 bg-white placeholder-gray-400 focus:ring-amber-500 focus:border-amber-500"
+              className="w-full px-3.5 py-2 border border-gray-300 rounded-md text-sm font-bold text-gray-900 bg-white placeholder-gray-400 focus:ring-amber-500 focus:border-amber-500"
             />
           )}
 
@@ -186,17 +204,36 @@ export default function SpaceFeed({
                 ? "Share a moment, thought, or photo with the space..."
                 : "Write your blog post or long-form story..."
             }
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white placeholder-gray-400 focus:ring-amber-500 focus:border-amber-500"
+            className="w-full px-3.5 py-2.5 border border-gray-300 rounded-md text-sm font-normal text-gray-900 bg-white placeholder-gray-400 focus:ring-amber-500 focus:border-amber-500"
           />
 
+          {/* Image Previews */}
+          {previews.length > 0 && (
+            <div className="flex flex-wrap gap-3 pt-2">
+              {previews.map((src, index) => (
+                <div key={index} className="relative w-24 h-24 rounded-lg overflow-hidden border border-gray-300 group">
+                  <img src={src} alt="Upload preview" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removeFile(index)}
+                    className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 hover:bg-red-600 transition"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
           <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-gray-100">
-            <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-gray-600 hover:text-amber-700 bg-gray-50 px-3 py-2 rounded-md border border-gray-200 transition">
+            <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-gray-700 hover:text-amber-700 bg-gray-50 px-3.5 py-2 rounded-md border border-gray-200 transition">
               <ImageIcon className="w-4 h-4 text-amber-600" />
-              <span>{selectedFile ? selectedFile.name : "Attach Photo/Video"}</span>
+              <span>{selectedFiles.length > 0 ? `Add More Images (${selectedFiles.length})` : "Attach Photo(s) / Video"}</span>
               <input
                 type="file"
+                multiple
                 accept="image/*,video/*"
-                onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                onChange={handleFileSelect}
                 className="hidden"
               />
             </label>
@@ -206,15 +243,15 @@ export default function SpaceFeed({
               whileTap={{ scale: 0.98 }}
               type="submit"
               disabled={uploading}
-              className="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-medium text-sm rounded-md shadow disabled:opacity-50 transition"
+              className="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold text-sm rounded-md shadow disabled:opacity-50 transition"
             >
-              {uploading ? "Publishing..." : "Publish"}
+              {uploading ? "Uploading & Publishing..." : "Publish Memory"}
             </motion.button>
           </div>
         </form>
       </motion.div>
 
-      {/* Posts Feed with Staggered Entrance Animations */}
+      {/* Posts Feed */}
       <div className="space-y-6">
         <AnimatePresence>
           {posts.length === 0 ? (
@@ -280,31 +317,37 @@ export default function SpaceFeed({
                     <h3 className="text-xl font-bold text-gray-900 mb-2">{post.title}</h3>
                   )}
 
-                  <p className="text-gray-800 text-sm whitespace-pre-wrap leading-relaxed mb-4">
+                  <p className="text-gray-900 text-sm whitespace-pre-wrap leading-relaxed mb-4 font-normal">
                     {post.content}
                   </p>
 
-                  {/* Media Attachments */}
+                  {/* Multi-Media Gallery Grid */}
                   {post.postMedia?.length > 0 && (
-                    <div className="mb-4 rounded-lg overflow-hidden border border-gray-200 max-h-96 bg-black flex items-center justify-center">
-                      {post.postMedia[0].media.type === "VIDEO" ? (
-                        <video
-                          controls
-                          src={post.postMedia[0].media.url}
-                          className="max-h-96 w-full object-contain"
-                        />
-                      ) : (
-                        <img
-                          src={post.postMedia[0].media.url}
-                          alt="Memory media"
-                          className="max-h-96 w-full object-contain"
-                        />
-                      )}
+                    <div className={`mb-4 grid gap-2 rounded-lg overflow-hidden border border-gray-200 ${
+                      post.postMedia.length === 1 ? "grid-cols-1 max-h-96" : "grid-cols-2 max-h-96"
+                    } bg-black`}>
+                      {post.postMedia.map((pm: any) => (
+                        <div key={pm.media.id} className="relative flex items-center justify-center overflow-hidden bg-black">
+                          {pm.media.type === "VIDEO" ? (
+                            <video
+                              controls
+                              src={pm.media.url}
+                              className="max-h-96 w-full object-contain"
+                            />
+                          ) : (
+                            <img
+                              src={pm.media.url}
+                              alt="Memory attachment"
+                              className="max-h-96 w-full object-contain"
+                            />
+                          )}
+                        </div>
+                      ))}
                     </div>
                   )}
 
                   {/* Social Actions */}
-                  <div className="flex items-center gap-6 py-3 border-t border-b border-gray-100 text-xs font-medium text-gray-600">
+                  <div className="flex items-center gap-6 py-3 border-t border-b border-gray-100 text-xs font-semibold text-gray-700">
                     <motion.button
                       whileTap={{ scale: 1.2 }}
                       onClick={() => handleToggleReaction(post.id)}
@@ -337,7 +380,7 @@ export default function SpaceFeed({
                             {new Date(comment.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                           </span>
                         </div>
-                        <p className="text-gray-700">{comment.body}</p>
+                        <p className="text-gray-900 font-normal">{comment.body}</p>
                       </motion.div>
                     ))}
 
@@ -348,13 +391,13 @@ export default function SpaceFeed({
                         placeholder="Write a comment..."
                         value={commentInputs[post.id] || ""}
                         onChange={(e) => setCommentInputs({ ...commentInputs, [post.id]: e.target.value })}
-                        className="flex-1 px-3 py-1.5 border border-gray-300 rounded-md text-xs text-gray-900 bg-white placeholder-gray-400 focus:ring-amber-500 focus:border-amber-500"
+                        className="flex-1 px-3.5 py-1.5 border border-gray-300 rounded-md text-xs text-gray-900 bg-white placeholder-gray-400 focus:ring-amber-500 focus:border-amber-500"
                       />
                       <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         type="submit"
-                        className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-md text-xs font-medium flex items-center gap-1"
+                        className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-md text-xs font-semibold flex items-center gap-1"
                       >
                         <Send className="w-3 h-3" />
                       </motion.button>

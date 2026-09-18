@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Image as ImageIcon, X } from "lucide-react";
+import { Plus, Image as ImageIcon, X, Upload } from "lucide-react";
 
 export default function AlbumsClient({
   spaceId,
@@ -14,18 +14,46 @@ export default function AlbumsClient({
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const handleCoverSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      const file = e.target.files[0];
+      setCoverFile(file);
+      setCoverPreview(URL.createObjectURL(file));
+    }
+  };
 
   const handleCreateAlbum = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
 
     setLoading(true);
+    let coverMediaId: string | undefined = undefined;
+
     try {
+      if (coverFile) {
+        const formData = new FormData();
+        formData.append("file", coverFile);
+        formData.append("spaceId", spaceId);
+
+        const uploadRes = await fetch("/api/media/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (uploadRes.ok) {
+          const uploadData = await uploadRes.json();
+          coverMediaId = uploadData.media.id;
+        }
+      }
+
       const res = await fetch(`/api/spaces/${spaceId}/albums`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, description }),
+        body: JSON.stringify({ name, description, coverMediaId }),
       });
 
       if (res.ok) {
@@ -33,6 +61,8 @@ export default function AlbumsClient({
         setAlbums([data.album, ...albums]);
         setName("");
         setDescription("");
+        setCoverFile(null);
+        setCoverPreview(null);
         setOpen(false);
       }
     } catch (err) {
@@ -67,40 +97,58 @@ export default function AlbumsClient({
             <h3 className="text-xl font-bold text-gray-900 mb-4">Create New Album</h3>
             <form onSubmit={handleCreateAlbum} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Album Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Album Name *</label>
                 <input
                   type="text"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white placeholder-gray-400 focus:ring-amber-500 focus:border-amber-500"
+                  className="w-full px-3.5 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white placeholder-gray-400 font-medium focus:ring-amber-500 focus:border-amber-500"
                   placeholder="e.g. Summer Beach Party"
                 />
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                 <textarea
                   rows={3}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white placeholder-gray-400 focus:ring-amber-500 focus:border-amber-500"
+                  className="w-full px-3.5 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white placeholder-gray-400 font-medium focus:ring-amber-500 focus:border-amber-500"
                   placeholder="Album details..."
                 />
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Album Cover Photo</label>
+                <label className="flex items-center justify-center gap-2 border-2 border-dashed border-gray-300 p-4 rounded-lg cursor-pointer hover:border-amber-500 transition">
+                  <Upload className="w-5 h-5 text-amber-600" />
+                  <span className="text-xs text-gray-700 font-medium">
+                    {coverFile ? coverFile.name : "Select Album Cover Photo"}
+                  </span>
+                  <input type="file" accept="image/*" onChange={handleCoverSelect} className="hidden" />
+                </label>
+                {coverPreview && (
+                  <div className="mt-2 h-28 rounded-lg overflow-hidden border">
+                    <img src={coverPreview} alt="Cover preview" className="w-full h-full object-cover" />
+                  </div>
+                )}
+              </div>
+
               <div className="flex justify-end gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="px-4 py-2 border rounded-md text-sm text-gray-700"
+                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-4 py-2 bg-amber-600 text-white rounded-md text-sm font-medium"
+                  className="px-4 py-2 bg-amber-600 text-white rounded-md text-sm font-medium hover:bg-amber-700"
                 >
-                  {loading ? "Creating..." : "Create"}
+                  {loading ? "Creating..." : "Create Album"}
                 </button>
               </div>
             </form>
@@ -117,8 +165,12 @@ export default function AlbumsClient({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {albums.map((album) => (
             <div key={album.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition">
-              <div className="h-40 bg-amber-100 flex items-center justify-center text-amber-700">
-                <ImageIcon className="w-12 h-12" />
+              <div className="h-40 bg-amber-100 flex items-center justify-center text-amber-700 relative overflow-hidden">
+                {album.coverMediaId ? (
+                  <img src={`/api/media/${album.coverMediaId}`} alt={album.name} className="w-full h-full object-cover" />
+                ) : (
+                  <ImageIcon className="w-12 h-12" />
+                )}
               </div>
               <div className="p-4">
                 <h3 className="font-bold text-gray-900 text-lg mb-1">{album.name}</h3>

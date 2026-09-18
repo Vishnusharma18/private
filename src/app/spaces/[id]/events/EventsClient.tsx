@@ -69,24 +69,24 @@ export default function EventsClient({
             <h3 className="text-xl font-bold text-gray-900 mb-4">Add Group Event</h3>
             <form onSubmit={handleCreateEvent} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Event Title</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Event Title *</label>
                 <input
                   type="text"
                   required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white placeholder-gray-400 focus:ring-amber-500 focus:border-amber-500"
+                  className="w-full px-3.5 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white placeholder-gray-400 font-medium focus:ring-amber-500 focus:border-amber-500"
                   placeholder="e.g. Annual Cabin Trip"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Event Date</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Event Date *</label>
                 <input
                   type="date"
                   required
                   value={eventDate}
                   onChange={(e) => setEventDate(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white placeholder-gray-400 focus:ring-amber-500 focus:border-amber-500"
+                  className="w-full px-3.5 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white font-medium focus:ring-amber-500 focus:border-amber-500"
                 />
               </div>
               <div>
@@ -95,7 +95,7 @@ export default function EventsClient({
                   rows={3}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white placeholder-gray-400 focus:ring-amber-500 focus:border-amber-500"
+                  className="w-full px-3.5 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white placeholder-gray-400 font-medium focus:ring-amber-500 focus:border-amber-500"
                   placeholder="Details, location, plans..."
                 />
               </div>
@@ -103,14 +103,14 @@ export default function EventsClient({
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="px-4 py-2 border rounded-md text-sm text-gray-700"
+                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-4 py-2 bg-amber-600 text-white rounded-md text-sm font-medium"
+                  className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-md text-sm font-medium"
                 >
                   {loading ? "Adding..." : "Add Event"}
                 </button>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search as SearchIcon, Calendar, BookOpen, Image as ImageIcon } from "lucide-react";
+import { Search as SearchIcon } from "lucide-react";
 
 export default function SearchClient({ spaceId }: { spaceId: string }) {
   const [query, setQuery] = useState("");
@@ -52,7 +52,7 @@ export default function SearchClient({ spaceId }: { spaceId: string }) {
           </button>
         </div>
 
-        <div className="flex gap-4 text-xs font-medium text-gray-600">
+        <div className="flex gap-4 text-xs font-medium text-gray-700">
           <label className="flex items-center gap-1.5 cursor-pointer">
             <input
               type="radio"
@@ -103,7 +103,7 @@ export default function SearchClient({ spaceId }: { spaceId: string }) {
                   <span>{new Date(post.createdAt).toLocaleDateString()}</span>
                 </div>
                 {post.title && <h4 className="font-bold text-gray-900 text-md mb-1">{post.title}</h4>}
-                <p className="text-sm text-gray-700 line-clamp-3">{post.content}</p>
+                <p className="text-sm text-gray-900 line-clamp-3">{post.content}</p>
                 <div className="text-xs text-gray-400 mt-3">By {post.author?.displayName}</div>
               </div>
             ))}
