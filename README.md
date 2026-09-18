@@ -1,36 +1,111 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Private Friends Memory & Life Journal Platform 📖
 
-## Getting Started
+A private, collaborative web platform built for friend groups to preserve photos, videos, stories, blogs, group events, and memories in one persistent chronological space.
 
-First, run the development server:
+---
 
+## 🚀 Features
+
+- **Private Spaces**: Create isolated journal spaces for your friend circles.
+- **Member Roles & Secure Invites**: Owner, Admin, and Member roles with secure token invitation links.
+- **Memories & Stories/Blogs**: Share quick trip memories or long-form rich story entries.
+- **Multi-Media Uploads**: Attach photos and videos with live pre-upload thumbnail previews.
+- **Social Interactions**: Interactive emoji likes/reactions, comments, and in-app notifications.
+- **Shared Albums & Events**: Organise trip galleries and schedule group reunions/moments.
+- **Search & Filter**: Search memories, stories, albums, and events across date ranges or authors.
+- **Framer Motion Animations**: Fluid UI transitions, card entrances, and modal popups.
+
+---
+
+## 🛠️ Stack & Architecture
+
+- **Frontend**: Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS, Lucide Icons, Framer Motion
+- **Backend & Database**: Next.js API Routes, Prisma ORM, SQLite (Local Dev) / PostgreSQL (Vercel & Render)
+- **Authentication**: JWT HTTP-only Cookies & bcryptjs password hashing
+
+---
+
+## ⚙️ Local Development Setup
+
+1. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
+
+2. **Database Setup & Seed**:
+   ```bash
+   npx prisma db push
+   npm run db:seed
+   ```
+
+3. **Start Development Server**:
+   ```bash
+   npm run dev
+   ```
+   Open `http://localhost:3000` in your browser.
+
+4. **Test Accounts Available**:
+   - `alex@example.com` | `password123`
+   - `sarah@example.com` | `password123`
+   - `marcus@example.com` | `password123`
+
+---
+
+## 🌐 Deploying Live to Vercel
+
+1. **Push Repository to GitHub**:
+   Push this codebase to your GitHub repository.
+
+2. **Import Project into Vercel**:
+   - Go to [Vercel Dashboard](https://vercel.com) -> **Add New** -> **Project**.
+   - Select your GitHub repository.
+
+3. **Environment Variables on Vercel**:
+   Set the following Environment Variables in Vercel project settings:
+   - `DATABASE_URL`: Your PostgreSQL database URL (e.g. from Vercel Postgres, Neon.tech, Supabase, or Render Postgres).
+   - `JWT_SECRET`: A secure random string (e.g. `secret-32-chars-key-12345`).
+   - `NEXT_PUBLIC_APP_URL`: Your production Vercel URL (e.g. `https://friends-journal.vercel.app`).
+
+4. **Initialize Database Schema on Vercel Database**:
+   Run database migration in your terminal pointing to production database:
+   ```bash
+   DATABASE_URL="your-production-postgres-url" npx prisma db push
+   ```
+
+5. **Deploy**:
+   Vercel will run `npm run build` which automatically executes `prisma generate && next build`.
+
+---
+
+## 🌐 Deploying Live to Render
+
+1. **Create Render PostgreSQL Database**:
+   - On [Render Dashboard](https://dashboard.render.com), click **New** -> **PostgreSQL**.
+   - Copy the **Internal / External Database URL**.
+
+2. **Create Web Service on Render**:
+   - Click **New** -> **Web Service** -> Connect your GitHub repository.
+   - **Environment**: Node
+   - **Build Command**: `npm install && npx prisma generate && npm run build`
+   - **Start Command**: `npm start`
+
+3. **Environment Variables on Render**:
+   Add the environment variables in Render Web Service settings:
+   - `DATABASE_URL`: Your Render PostgreSQL database URL.
+   - `JWT_SECRET`: Your random secret key.
+   - `NEXT_PUBLIC_APP_URL`: Your Render app URL (e.g. `https://friends-journal.onrender.com`).
+
+4. **Push Database Schema**:
+   In Render Shell or locally:
+   ```bash
+   DATABASE_URL="your-render-postgres-url" npx prisma db push
+   ```
+
+---
+
+## 🧪 Testing
+
+Run automated PRD verification test suite:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm test
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
