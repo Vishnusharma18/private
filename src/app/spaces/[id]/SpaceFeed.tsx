@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, MessageCircle, Image as ImageIcon, Send, Trash2, Plus, FileText } from "lucide-react";
+import { Heart, MessageCircle, Image as ImageIcon, Send, Trash2, Plus, FileText, X } from "lucide-react";
 
 export default function SpaceFeed({
   spaceId,
@@ -17,9 +17,24 @@ export default function SpaceFeed({
   const [postType, setPostType] = useState<"MEMORY" | "STORY">("MEMORY");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [commentInputs, setCommentInputs] = useState<{ [postId: string]: string }>({});
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    const files = Array.from(e.target.files);
+    setSelectedFiles((prev) => [...prev, ...files]);
+
+    const newPreviews = files.map((file) => URL.createObjectURL(file));
+    setPreviews((prev) => [...prev, ...newPreviews]);
+  };
+
+  const removeFile = (index: number) => {
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+    setPreviews((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,19 +44,21 @@ export default function SpaceFeed({
     let mediaIds: string[] = [];
 
     try {
-      if (selectedFile) {
-        const formData = new FormData();
-        formData.append("file", selectedFile);
-        formData.append("spaceId", spaceId);
+      if (selectedFiles.length > 0) {
+        for (const file of selectedFiles) {
+          const formData = new FormData();
+          formData.append("file", file);
+          formData.append("spaceId", spaceId);
 
-        const uploadRes = await fetch("/api/media/upload", {
-          method: "POST",
-          body: formData,
-        });
+          const uploadRes = await fetch("/api/media/upload", {
+            method: "POST",
+            body: formData,
+          });
 
-        if (uploadRes.ok) {
-          const uploadData = await uploadRes.json();
-          mediaIds.push(uploadData.media.id);
+          if (uploadRes.ok) {
+            const uploadData = await uploadRes.json();
+            mediaIds.push(uploadData.media.id);
+          }
         }
       }
 
@@ -61,7 +78,8 @@ export default function SpaceFeed({
         setPosts([data.post, ...posts]);
         setContent("");
         setTitle("");
-        setSelectedFile(null);
+        setSelectedFiles([]);
+        setPreviews([]);
       }
     } catch (err) {
       console.error(err);
@@ -130,7 +148,7 @@ export default function SpaceFeed({
 
   return (
     <div className="space-y-8">
-      {/* Post Creation Box with Framer Motion */}
+      {/* Post Creation Box with Image Upload & Live Previews */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -189,14 +207,33 @@ export default function SpaceFeed({
             className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-amber-500 focus:border-amber-500"
           />
 
+          {/* Image Previews */}
+          {previews.length > 0 && (
+            <div className="flex flex-wrap gap-3 pt-2">
+              {previews.map((src, index) => (
+                <div key={index} className="relative w-24 h-24 rounded-lg overflow-hidden border border-gray-300 group">
+                  <img src={src} alt="Upload preview" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removeFile(index)}
+                    className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 hover:bg-red-600 transition"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
           <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-gray-100">
-            <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-gray-600 hover:text-amber-700 bg-gray-50 px-3 py-2 rounded-md border border-gray-200 transition">
+            <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-gray-600 hover:text-amber-700 bg-gray-50 px-3.5 py-2 rounded-md border border-gray-200 transition">
               <ImageIcon className="w-4 h-4 text-amber-600" />
-              <span>{selectedFile ? selectedFile.name : "Attach Photo/Video"}</span>
+              <span>{selectedFiles.length > 0 ? `Add More Images (${selectedFiles.length})` : "Attach Photo(s) / Video"}</span>
               <input
                 type="file"
+                multiple
                 accept="image/*,video/*"
-                onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                onChange={handleFileSelect}
                 className="hidden"
               />
             </label>
@@ -208,13 +245,13 @@ export default function SpaceFeed({
               disabled={uploading}
               className="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-medium text-sm rounded-md shadow disabled:opacity-50 transition"
             >
-              {uploading ? "Publishing..." : "Publish"}
+              {uploading ? "Uploading & Publishing..." : "Publish Memory"}
             </motion.button>
           </div>
         </form>
       </motion.div>
 
-      {/* Posts Feed with Staggered Entrance Animations */}
+      {/* Posts Feed */}
       <div className="space-y-6">
         <AnimatePresence>
           {posts.length === 0 ? (
@@ -284,22 +321,28 @@ export default function SpaceFeed({
                     {post.content}
                   </p>
 
-                  {/* Media Attachments */}
+                  {/* Multi-Media Gallery Grid */}
                   {post.postMedia?.length > 0 && (
-                    <div className="mb-4 rounded-lg overflow-hidden border border-gray-200 max-h-96 bg-black flex items-center justify-center">
-                      {post.postMedia[0].media.type === "VIDEO" ? (
-                        <video
-                          controls
-                          src={post.postMedia[0].media.url}
-                          className="max-h-96 w-full object-contain"
-                        />
-                      ) : (
-                        <img
-                          src={post.postMedia[0].media.url}
-                          alt="Memory media"
-                          className="max-h-96 w-full object-contain"
-                        />
-                      )}
+                    <div className={`mb-4 grid gap-2 rounded-lg overflow-hidden border border-gray-200 ${
+                      post.postMedia.length === 1 ? "grid-cols-1 max-h-96" : "grid-cols-2 max-h-96"
+                    } bg-black`}>
+                      {post.postMedia.map((pm: any) => (
+                        <div key={pm.media.id} className="relative flex items-center justify-center overflow-hidden bg-black">
+                          {pm.media.type === "VIDEO" ? (
+                            <video
+                              controls
+                              src={pm.media.url}
+                              className="max-h-96 w-full object-contain"
+                            />
+                          ) : (
+                            <img
+                              src={pm.media.url}
+                              alt="Memory attachment"
+                              className="max-h-96 w-full object-contain"
+                            />
+                          )}
+                        </div>
+                      ))}
                     </div>
                   )}
 
