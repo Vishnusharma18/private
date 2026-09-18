@@ -4,8 +4,6 @@ import { prisma } from "@/lib/prisma";
 import fs from "fs/promises";
 import path from "path";
 
-const UPLOAD_DIR = path.join(process.cwd(), "uploads");
-
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ key: string }> }
@@ -40,7 +38,13 @@ export async function GET(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const filePath = path.join(UPLOAD_DIR, key);
+    let filePath = path.join(process.cwd(), "uploads", key);
+    try {
+      await fs.access(filePath);
+    } catch {
+      filePath = path.join("/tmp", "uploads", key);
+    }
+
     const fileBuffer = await fs.readFile(filePath);
 
     return new NextResponse(fileBuffer, {

@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = "file:./dev.db"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -54,8 +54,8 @@ model Membership {
   id        String   @id @default(uuid())
   spaceId   String
   userId    String
-  role      String   @default("MEMBER") // OWNER, ADMIN, MEMBER
-  status    String   @default("ACTIVE") // ACTIVE, PENDING
+  role      String   @default("MEMBER")
+  status    String   @default("ACTIVE")
   joinedAt  DateTime @default(now())
 
   space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
@@ -83,11 +83,11 @@ model Post {
   id           String    @id @default(uuid())
   spaceId      String
   authorId     String
-  type         String    @default("MEMORY") // MEMORY, STORY
+  type         String    @default("MEMORY")
   title        String?
   content      String
   coverMediaId String?
-  status       String    @default("PUBLISHED") // DRAFT, PUBLISHED
+  status       String    @default("PUBLISHED")
   publishedAt  DateTime? @default(now())
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
@@ -104,7 +104,7 @@ model Media {
   spaceId      String
   uploaderId   String
   storageKey   String
-  type         String   // IMAGE, VIDEO
+  type         String
   mimeType     String
   size         Int
   url          String
@@ -114,9 +114,9 @@ model Media {
   thumbnailKey String?
   createdAt    DateTime @default(now())
 
-  space     Space        @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  uploader  User         @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
-  postMedia PostMedia[]
+  space      Space        @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  uploader   User         @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+  postMedia  PostMedia[]
   albumMedia AlbumMedia[]
 }
 
@@ -175,7 +175,7 @@ model Reaction {
   id        String   @id @default(uuid())
   postId    String
   userId    String
-  type      String   // LIKE, HEART, LAUGH, WOW, SAD
+  type      String
   createdAt DateTime @default(now())
 
   post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
@@ -203,8 +203,8 @@ model Notification {
   id         String   @id @default(uuid())
   userId     String
   actorId    String
-  type       String   // INVITE, COMMENT, REACTION
-  entityType String   // SPACE, POST, COMMENT
+  type       String
+  entityType String
   entityId   String
   readAt     DateTime?
   createdAt  DateTime @default(now())

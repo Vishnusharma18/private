@@ -103,7 +103,7 @@ export default function AlbumsClient({
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md text-sm"
+                  className="w-full px-3.5 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white placeholder-gray-400 font-medium focus:ring-amber-500 focus:border-amber-500"
                   placeholder="e.g. Summer Beach Party"
                 />
               </div>
@@ -114,7 +114,7 @@ export default function AlbumsClient({
                   rows={3}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md text-sm"
+                  className="w-full px-3.5 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white placeholder-gray-400 font-medium focus:ring-amber-500 focus:border-amber-500"
                   placeholder="Album details..."
                 />
               </div>
@@ -123,7 +123,7 @@ export default function AlbumsClient({
                 <label className="block text-sm font-medium text-gray-700 mb-1">Album Cover Photo</label>
                 <label className="flex items-center justify-center gap-2 border-2 border-dashed border-gray-300 p-4 rounded-lg cursor-pointer hover:border-amber-500 transition">
                   <Upload className="w-5 h-5 text-amber-600" />
-                  <span className="text-xs text-gray-600 font-medium">
+                  <span className="text-xs text-gray-700 font-medium">
                     {coverFile ? coverFile.name : "Select Album Cover Photo"}
                   </span>
                   <input type="file" accept="image/*" onChange={handleCoverSelect} className="hidden" />
@@ -139,14 +139,14 @@ export default function AlbumsClient({
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="px-4 py-2 border rounded-md text-sm text-gray-700"
+                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-4 py-2 bg-amber-600 text-white rounded-md text-sm font-medium"
+                  className="px-4 py-2 bg-amber-600 text-white rounded-md text-sm font-medium hover:bg-amber-700"
                 >
                   {loading ? "Creating..." : "Create Album"}
                 </button>

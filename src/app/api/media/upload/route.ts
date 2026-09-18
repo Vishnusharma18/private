@@ -5,13 +5,16 @@ import fs from "fs/promises";
 import path from "path";
 import crypto from "crypto";
 
-const UPLOAD_DIR = path.join(process.cwd(), "uploads");
+async function getUploadDir() {
+  const localDir = path.join(process.cwd(), "uploads");
+  const tmpDir = path.join("/tmp", "uploads");
 
-async function ensureUploadDir() {
   try {
-    await fs.mkdir(UPLOAD_DIR, { recursive: true });
+    await fs.mkdir(localDir, { recursive: true });
+    return localDir;
   } catch (err) {
-    // Already exists
+    await fs.mkdir(tmpDir, { recursive: true });
+    return tmpDir;
   }
 }
 
@@ -44,14 +47,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "You are not a member of this space" }, { status: 403 });
     }
 
-    await ensureUploadDir();
+    const uploadDir = await getUploadDir();
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
     const ext = path.extname(file.name) || ".jpg";
     const storageKey = `${crypto.randomUUID()}${ext}`;
-    const filePath = path.join(UPLOAD_DIR, storageKey);
+    const filePath = path.join(uploadDir, storageKey);
 
     await fs.writeFile(filePath, buffer);
 
