@@ -148,7 +148,7 @@ export default function SpaceFeed({
 
   return (
     <div className="space-y-8">
-      {/* Post Creation Box with Image Upload & Live Previews */}
+      {/* Post Creation Box */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -160,7 +160,7 @@ export default function SpaceFeed({
             onClick={() => setPostType("MEMORY")}
             className={`flex items-center space-x-1.5 text-sm font-medium pb-2 border-b-2 transition ${
               postType === "MEMORY"
-                ? "border-amber-600 text-amber-700"
+                ? "border-amber-600 text-amber-700 font-bold"
                 : "border-transparent text-gray-500 hover:text-gray-700"
             }`}
           >
@@ -171,7 +171,7 @@ export default function SpaceFeed({
             onClick={() => setPostType("STORY")}
             className={`flex items-center space-x-1.5 text-sm font-medium pb-2 border-b-2 transition ${
               postType === "STORY"
-                ? "border-amber-600 text-amber-700"
+                ? "border-amber-600 text-amber-700 font-bold"
                 : "border-transparent text-gray-500 hover:text-gray-700"
             }`}
           >
@@ -190,7 +190,7 @@ export default function SpaceFeed({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Story Title..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-semibold focus:ring-amber-500 focus:border-amber-500"
+              className="w-full px-3.5 py-2 border border-gray-300 rounded-md text-sm font-bold text-gray-900 bg-white placeholder-gray-400 focus:ring-amber-500 focus:border-amber-500"
             />
           )}
 
@@ -204,7 +204,7 @@ export default function SpaceFeed({
                 ? "Share a moment, thought, or photo with the space..."
                 : "Write your blog post or long-form story..."
             }
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-amber-500 focus:border-amber-500"
+            className="w-full px-3.5 py-2.5 border border-gray-300 rounded-md text-sm font-normal text-gray-900 bg-white placeholder-gray-400 focus:ring-amber-500 focus:border-amber-500"
           />
 
           {/* Image Previews */}
@@ -226,7 +226,7 @@ export default function SpaceFeed({
           )}
 
           <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-gray-100">
-            <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-gray-600 hover:text-amber-700 bg-gray-50 px-3.5 py-2 rounded-md border border-gray-200 transition">
+            <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-gray-700 hover:text-amber-700 bg-gray-50 px-3.5 py-2 rounded-md border border-gray-200 transition">
               <ImageIcon className="w-4 h-4 text-amber-600" />
               <span>{selectedFiles.length > 0 ? `Add More Images (${selectedFiles.length})` : "Attach Photo(s) / Video"}</span>
               <input
@@ -243,7 +243,7 @@ export default function SpaceFeed({
               whileTap={{ scale: 0.98 }}
               type="submit"
               disabled={uploading}
-              className="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-medium text-sm rounded-md shadow disabled:opacity-50 transition"
+              className="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold text-sm rounded-md shadow disabled:opacity-50 transition"
             >
               {uploading ? "Uploading & Publishing..." : "Publish Memory"}
             </motion.button>
@@ -317,7 +317,7 @@ export default function SpaceFeed({
                     <h3 className="text-xl font-bold text-gray-900 mb-2">{post.title}</h3>
                   )}
 
-                  <p className="text-gray-800 text-sm whitespace-pre-wrap leading-relaxed mb-4">
+                  <p className="text-gray-900 text-sm whitespace-pre-wrap leading-relaxed mb-4 font-normal">
                     {post.content}
                   </p>
 
@@ -347,7 +347,7 @@ export default function SpaceFeed({
                   )}
 
                   {/* Social Actions */}
-                  <div className="flex items-center gap-6 py-3 border-t border-b border-gray-100 text-xs font-medium text-gray-600">
+                  <div className="flex items-center gap-6 py-3 border-t border-b border-gray-100 text-xs font-semibold text-gray-700">
                     <motion.button
                       whileTap={{ scale: 1.2 }}
                       onClick={() => handleToggleReaction(post.id)}
@@ -380,7 +380,7 @@ export default function SpaceFeed({
                             {new Date(comment.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                           </span>
                         </div>
-                        <p className="text-gray-700">{comment.body}</p>
+                        <p className="text-gray-900 font-normal">{comment.body}</p>
                       </motion.div>
                     ))}
 
@@ -391,13 +391,13 @@ export default function SpaceFeed({
                         placeholder="Write a comment..."
                         value={commentInputs[post.id] || ""}
                         onChange={(e) => setCommentInputs({ ...commentInputs, [post.id]: e.target.value })}
-                        className="flex-1 px-3 py-1.5 border border-gray-300 rounded-md text-xs focus:ring-amber-500 focus:border-amber-500"
+                        className="flex-1 px-3.5 py-1.5 border border-gray-300 rounded-md text-xs text-gray-900 bg-white placeholder-gray-400 focus:ring-amber-500 focus:border-amber-500"
                       />
                       <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         type="submit"
-                        className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-md text-xs font-medium flex items-center gap-1"
+                        className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-md text-xs font-semibold flex items-center gap-1"
                       >
                         <Send className="w-3 h-3" />
                       </motion.button>

@@ -59,7 +59,7 @@ export default function LoginPage() {
               required
               value={emailOrUsername}
               onChange={(e) => setEmailOrUsername(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500"
+              className="w-full px-3.5 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white placeholder-gray-400 focus:ring-amber-500 focus:border-amber-500"
               placeholder="alex@example.com or alex"
             />
           </div>
@@ -71,7 +71,7 @@ export default function LoginPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500"
+              className="w-full px-3.5 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white placeholder-gray-400 focus:ring-amber-500 focus:border-amber-500"
               placeholder="••••••••"
             />
           </div>
@@ -79,7 +79,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 px-4 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-md shadow focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-50"
+            className="w-full py-2.5 px-4 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-md shadow focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-50 transition"
           >
             {loading ? "Signing in..." : "Log In"}
           </button>
