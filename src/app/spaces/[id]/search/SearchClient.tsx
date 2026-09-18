@@ -40,7 +40,7 @@ export default function SearchClient({ spaceId }: { spaceId: string }) {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search memories, stories, title or text..."
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-amber-500 focus:border-amber-500"
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white placeholder-gray-400 focus:ring-amber-500 focus:border-amber-500"
             />
           </div>
           <button

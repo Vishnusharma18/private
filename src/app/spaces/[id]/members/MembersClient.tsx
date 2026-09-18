@@ -91,7 +91,7 @@ export default function MembersClient({
                 type="text"
                 readOnly
                 value={inviteUrl}
-                className="flex-1 px-3 py-2 border rounded-md text-xs bg-gray-50 text-gray-700 font-mono"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-xs text-gray-900 bg-gray-50 placeholder-gray-400 font-mono"
               />
               <button
                 onClick={copyToClipboard}

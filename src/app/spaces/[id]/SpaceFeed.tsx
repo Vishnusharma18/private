@@ -172,7 +172,7 @@ export default function SpaceFeed({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Story Title..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-semibold focus:ring-amber-500 focus:border-amber-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-semibold text-gray-900 bg-white placeholder-gray-400 focus:ring-amber-500 focus:border-amber-500"
             />
           )}
 
@@ -186,7 +186,7 @@ export default function SpaceFeed({
                 ? "Share a moment, thought, or photo with the space..."
                 : "Write your blog post or long-form story..."
             }
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-amber-500 focus:border-amber-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white placeholder-gray-400 focus:ring-amber-500 focus:border-amber-500"
           />
 
           <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-gray-100">
@@ -348,7 +348,7 @@ export default function SpaceFeed({
                         placeholder="Write a comment..."
                         value={commentInputs[post.id] || ""}
                         onChange={(e) => setCommentInputs({ ...commentInputs, [post.id]: e.target.value })}
-                        className="flex-1 px-3 py-1.5 border border-gray-300 rounded-md text-xs focus:ring-amber-500 focus:border-amber-500"
+                        className="flex-1 px-3 py-1.5 border border-gray-300 rounded-md text-xs text-gray-900 bg-white placeholder-gray-400 focus:ring-amber-500 focus:border-amber-500"
                       />
                       <motion.button
                         whileHover={{ scale: 1.05 }}
